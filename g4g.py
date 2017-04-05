@@ -6,13 +6,14 @@ from os import system
 from sys import exit
 from time import sleep
 from requests.exceptions import ConnectionError
+from article import Article
 
 BASE_URL = 'http://www.geeksforgeeks.org/'
 articles = []
 
-choice_to_category = {1: 'c', 2: 'c-plus-plus', 3: 'java',
-                      4: 'fundamentals-of-algorithms',
-                      5: 'data-structures'}
+choice_to_category = {1: 'c', 2: 'c-plus-plus', 3: 'java', 4: 'python',
+                      5: 'fundamentals-of-algorithms',
+                      6: 'data-structures'}
 
 
 def display_menu():
@@ -20,8 +21,9 @@ def display_menu():
     print("1. C Language")
     print("2. C++ Language")
     print("3. Java")
-    print("4. Algorithms")
-    print("5. Data Structures")
+    print("4. Python")
+    print("5. Algorithms")
+    print("6. Data Structures")
 
 
 def get_category_choice():
@@ -45,13 +47,17 @@ def save_articles_as_html_and_pdf():
                     '</head><body>'
                     )
     allArticles += '<h1 style="text-align:center;font-size:40px">' + categoryUrl.title() + ' Archive</h1><hr>'
-    allArticles += '<hr>'.join(articles)
+    allArticles += '<h1 style="padding-left:5%;font-size:200%;"> Index</h1><Br/>'
+    for x in range(len(articles)):
+        allArticles += '<a href =\"#' + str(x+1) + '\">' + '<h1 style="padding-left:5%;font-size:20px;">' + str(x+1) + ".\t\t"+articles[x].title + '</h1></a> <br/>'
+    for x in range(len(articles)):
+        allArticles += '<hr id=\"' + str(x+1) +'\">' + articles[x].content.decode("utf-8")
     allArticles += '''
                     </body></html>
                    '''
     html_file_name = 'G4G_' + categoryUrl.title() + '.html'
-    Html_file= open(html_file_name, "w")
-    Html_file.write(allArticles)
+    Html_file = open(html_file_name, "w")
+    Html_file.write(allArticles.encode("utf-8"))
     Html_file.close()
     pdf_file_name = 'G4G_' + categoryUrl.title() + '.pdf'
     print("Generating PDF " + pdf_file_name)
@@ -88,7 +94,8 @@ def scrape_category(categoryUrl):
                 code_tag['class'] = code_tag.get('class', []) + ['prettyprint']
             article = link_soup.find('article')
             # Now add this article to list of all articles
-            articles.append(article.encode('UTF-8'))
+            page = Article(title=link_soup.title.string, content=article.encode('UTF-8'))
+            articles.append(page)
         # Sometimes hanging. So Ctrl ^ C, and try the next link.
         # Find out the reason & improve this.
         except KeyboardInterrupt:
